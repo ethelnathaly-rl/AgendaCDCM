@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDCM Agenda - Gestión Avanzada</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- SIDEBAR DE NAVEGACIÓN -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-layer-group"></i> CDCM</h2>
+                <button class="btn-icon mobile-menu-close"><i class="fa-solid fa-times"></i></button>
+            </div>
+            
+            <div class="sidebar-actions">
+                <button class="btn-primary btn-block" id="btnNewTask">
+                    <i class="fa-solid fa-plus"></i> Nuevo Proyecto
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <p class="nav-title">VISTAS</p>
+                <ul id="navMenu">
+                    <li><a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-pie"></i> Resumen</a></li>
+                    <li><a href="#" data-view="calendar"><i class="fa-solid fa-calendar-days"></i> Calendario</a></li>
+                    <li><a href="#" data-view="kanban"><i class="fa-solid fa-border-all"></i> Tablero Kanban</a></li>
+                    <li><a href="#" data-view="list"><i class="fa-solid fa-list-ul"></i> Lista</a></li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-secondary btn-block" id="btnSettings">
+                    <i class="fa-solid fa-gear"></i> Configuración
+                </button>
+            </div>
+        </aside>
+
+        <!-- PANEL PRINCIPAL -->
+        <main class="main-panel">
+            
+            <!-- BARRA SUPERIOR (TOPBAR) -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="btn-icon mobile-menu-toggle"><i class="fa-solid fa-bars"></i></button>
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar proyectos, tareas...">
+                    </div>
+                </div>
+                
+                <div class="topbar-filters">
+                    <select id="filterCategory" class="filter-select">
+                        <option value="all">Todas las Categorías</option>
+                    </select>
+                    <select id="filterStatus" class="filter-select">
+                        <option value="all">Todos los Estados</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="in_progress">En Progreso</option>
+                        <option value="on_hold">En Espera</option>
+                        <option value="completed">Completado</option>
+                    </select>
+                </div>
+
+                <div class="topbar-right">
+                    <button class="btn-icon voice-pulse" id="btnQuickVoiceAdd" title="Añadir Tarea por Voz"><i class="fa-solid fa-microphone"></i></button>
+                    <button class="btn-icon" id="themeToggle" title="Cambiar Tema"><i class="fa-solid fa-moon"></i></button>
+                </div>
+            </header>
+
+            <!-- CONTENEDOR DINÁMICO DE VISTAS -->
+            <div id="viewContainer" class="view-container">
+                <!-- Aquí se inyecta el HTML de la vista activa (Dashboard, Calendar, etc.) -->
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE CREACIÓN/EDICIÓN -->
+    <div id="taskModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Nuevo Proyecto / Tarea</h3>
+                <button class="btn-icon close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm" class="task-form">
+                    <input type="hidden" id="taskId">
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label for="taskTitle">Título</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" id="taskTitle" placeholder="Ej. Convocatoria Etapa 1" required style="flex: 1; margin: 0;">
+                                <button type="button" class="btn-icon btn-voice-dictate" data-target="taskTitle" title="Dictar Título" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-microphone"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Responsable(s)</label>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <input type="text" id="assigneeSearch" placeholder="Buscar responsable..." oninput="window.CDCM.App.filterAssigneeList(this.value)" autocomplete="off">
+                                <div id="taskAssigneesList" style="flex: 1; max-height: 130px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; background: var(--bg-color);">
+                                    <!-- Injected via JS -->
+                                </div>
+                                <button type="button" class="btn-secondary" id="btnNewAssignee" style="width: fit-content;" title="Añadir Nuevo Responsable"><i class="fa-solid fa-plus"></i> Nuevo Responsable</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskCategory">Categoría</label>
+                            <div style="display: flex; gap: 8px;">
+                                <select id="taskCategory" required style="flex: 1;">
+                                </select>
+                                <button type="button" class="btn-primary" id="btnNewCategory" style="padding: 0 12px;" title="Añadir Categoría"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskType">Tipo</label>
+                            <select id="taskType">
+                                <option value="project">Proyecto</option>
+                                <option value="task">Tarea Simple</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskStatus">Estado</label>
+                            <select id="taskStatus">
+                                <option value="pending">Pendiente</option>
+                                <option value="in_progress">En Progreso</option>
+                                <option value="on_hold">En Espera</option>
+                                <option value="completed">Completado</option>
+                                <option value="cancelled">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPriority">Prioridad</label>
+                            <select id="taskPriority">
+                                <option value="low">Baja</option>
+                                <option value="medium" selected>Media</option>
+                                <option value="high">Alta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskStartDate">Fecha Inicio</label>
+                            <input type="date" id="taskStartDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskStartTime">Hora (Opcional)</label>
+                            <input type="time" id="taskStartTime">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskEndDate">Fecha Fin (Opcional)</label>
+                            <input type="date" id="taskEndDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskAlarmOffset">Recordatorio</label>
+                            <select id="taskAlarmOffset">
+                                <option value="">Sin recordatorio</option>
+                                <option value="0">Al momento</option>
+                                <option value="5">5 minutos antes</option>
+                                <option value="15">15 minutos antes</option>
+                                <option value="30">30 minutos antes</option>
+                                <option value="60">1 hora antes</option>
+                                <option value="1440">1 día antes</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskDetails" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Detalles / Descripción</span>
+                            <button type="button" class="btn-icon btn-voice-dictate" data-target="taskDetails" title="Dictar Detalles" style="padding: 4px; height: auto;"><i class="fa-solid fa-microphone"></i></button>
+                        </label>
+                        <textarea id="taskDetails" rows="3" placeholder="Escribe detalles adicionales aquí..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskObservations">Observaciones (Opcional)</label>
+                        <textarea id="taskObservations" rows="2" placeholder="Notas o resultados del evento..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="display: flex; width: 100%;">
+                <button type="button" class="btn-danger" id="btnDeleteTask" style="display: none; margin-right: auto;"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                <button type="button" class="btn-secondary close-modal">Cancelar</button>
+                <button type="submit" form="taskForm" class="btn-primary" id="btnSaveTask">Guardar Proyecto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURACIÓN -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-gear"></i> Configuración y Respaldo</h3>
+                <button class="btn-icon close-settings"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body settings-body">
+                <div class="settings-section">
+                    <h4>Datos Locales</h4>
+                    <p class="text-sm text-muted">Realiza copias de seguridad de todos tus proyectos para no perder información.</p>
+                    <div class="settings-actions">
+                        <button id="btnExport" class="btn-secondary btn-block"><i class="fa-solid fa-download"></i> Exportar a JSON (Backup)</button>
+                        <button id="btnImportTrigger" class="btn-secondary btn-block"><i class="fa-solid fa-upload"></i> Importar desde JSON</button>
+                        <input type="file" id="fileImport" accept=".json" style="display:none;">
+                    </div>
+                </div>
+                <div class="settings-section" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <h4>Administración</h4>
+                    <p class="text-sm text-muted">Edita o elimina las categorías y responsables.</p>
+                    <button id="btnManageCatalogs" class="btn-primary btn-block"><i class="fa-solid fa-list"></i> Gestionar Catálogos</button>
+                </div>
+                <div class="settings-section" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <h4 style="color: var(--accent-red)">Zona de Peligro</h4>
+                    <button id="btnClearData" class="btn-danger btn-block"><i class="fa-solid fa-trash-can"></i> Borrar Todo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE NUEVA CATEGORÍA -->
+    <div id="categoryModal" class="modal-overlay">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Nueva Categoría</h3>
+                <button class="btn-icon close-category-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm" class="task-form">
+                    <div class="form-group">
+                        <label for="catName">Nombre de la Categoría</label>
+                        <input type="text" id="catName" placeholder="Ej. Soporte Técnico" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="catColor">Color</label>
+                        <input type="color" id="catColor" value="#3b82f6" style="width: 100%; height: 40px; cursor: pointer; border: none; padding: 0;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary close-category-modal">Cancelar</button>
+                <button type="submit" form="categoryForm" class="btn-primary">Crear Categoría</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE NUEVO RESPONSABLE -->
+    <div id="assigneeModal" class="modal-overlay">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Nuevo Responsable</h3>
+                <button class="btn-icon close-assignee-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="assigneeForm" class="task-form">
+                    <div class="form-group">
+                        <label for="assigneeName">Nombre del Responsable</label>
+                        <input type="text" id="assigneeName" placeholder="Ej. Dr. Juan Pérez" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary close-assignee-modal">Cancelar</button>
+                <button type="submit" form="assigneeForm" class="btn-primary">Crear Responsable</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTOR DE CATÁLOGOS -->
+    <div id="catalogModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Gestionar Catálogos</h3>
+                <button class="btn-icon close-catalog-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px;">
+                    <h4>Categorías</h4>
+                    <div id="catalogCategoryList" style="display:flex; flex-direction:column; gap:10px; margin-top:10px; max-height: 200px; overflow-y:auto; padding-right:5px;">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <h4>Responsables</h4>
+                    <div id="catalogAssigneeList" style="display:flex; flex-direction:column; gap:10px; margin-top:10px; max-height: 200px; overflow-y:auto; padding-right:5px;">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts (Secuencia manual para mantener modularidad sin CORS de ES Modules) -->
+    <script src="js/utils.js"></script>
+    <script src="js/data-model.js"></script>
+    <script src="js/storage-service.js"></script>
+    <script src="js/state-manager.js"></script>
+    
+    <!-- Views -->
+    <script src="js/views/dashboard.js"></script>
+    <script src="js/views/calendar.js"></script>
+    <script src="js/views/kanban.js"></script>
+    <script src="js/views/list.js"></script>
+    
+    <!-- Components -->
+    <script src="js/components/form-modal.js"></script>
+    <script src="js/components/category-modal.js"></script>
+    <script src="js/components/assignee-modal.js"></script>
+    <script src="js/components/catalog-modal.js"></script>
+    <script src="js/components/voice-handler.js"></script>
+    
+    <!-- Entry Point -->
+    <script src="app.js"></script>
+</body>
+</html>
