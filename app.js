@@ -187,6 +187,9 @@ window.CDCM.App = {
             case 'calendar':
                 window.CDCM.CalendarView.render(container, tasks);
                 break;
+            case 'paint':
+                if(window.CDCM.PaintView) window.CDCM.PaintView.render(container);
+                break;
             default:
                 window.CDCM.DashboardView.render(container, tasks);
         }
