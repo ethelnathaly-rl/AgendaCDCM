@@ -123,6 +123,7 @@ window.CDCM.FormModal = {
         const task = window.CDCM.StateManager.state.tasks.find(t => t.id === taskId);
         if (!task) return;
 
+        this.currentTaskId = taskId;
         this.title.textContent = 'Editar Proyecto / Tarea';
         
         // Llenar campos
