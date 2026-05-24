@@ -93,7 +93,7 @@ window.CDCM.CalendarView = {
                      ondragend="window.CDCM.CalendarView.handleCalDragEnd(event)"
                      onclick="event.stopPropagation(); window.CDCM.FormModal.openEdit('${task.id}')"
                      oncontextmenu="window.CDCM.CalendarView.handleCopy(event,'${task.id}')">
-                    ${task.title}
+                    ${task.attachments && task.attachments.length > 0 ? '<i class="fa-solid fa-paperclip"></i> ' : ''}${task.title}
                 </div>`;
             });
 
@@ -180,7 +180,7 @@ window.CDCM.CalendarView = {
                     ondragend="window.CDCM.CalendarView.handleCalDragEnd(event)"
                     onclick="event.stopPropagation(); window.CDCM.FormModal.openEdit('${t.id}')"
                     oncontextmenu="window.CDCM.CalendarView.handleCopy(event,'${t.id}')">
-                    ${t.title}
+                    ${t.attachments && t.attachments.length > 0 ? '<i class="fa-solid fa-paperclip"></i> ' : ''}${t.title}
                 </div>`;
             });
 
@@ -242,7 +242,7 @@ window.CDCM.CalendarView = {
                 html += `<div style="border-left:4px solid ${bg}; background:var(--card-bg); border-radius:var(--radius-sm); padding:14px; box-shadow:var(--shadow-sm); ${isVencida?'outline:2px solid #ef444466;':''}">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <div>
-                            <strong style="font-size:1rem;">${task.title}</strong>
+                            <strong style="font-size:1rem;">${task.attachments && task.attachments.length > 0 ? '<i class="fa-solid fa-paperclip" style="color:var(--text-muted); margin-right:4px;"></i>' : ''}${task.title}</strong>
                             ${task.startTime ? `<span style="color:var(--text-muted); font-size:0.85rem; margin-left:8px;">🕐 ${task.startTime}</span>` : ''}
                         </div>
                         <div style="display:flex; gap:6px;">

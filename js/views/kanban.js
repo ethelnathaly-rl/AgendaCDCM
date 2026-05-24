@@ -60,6 +60,7 @@ window.CDCM.KanbanView = {
                         <div class="task-card-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 6px;">
                             <div class="task-card-title" style="margin-bottom:0; flex: 1;">
                                 ${task.priority === 'high' ? `<i class="fa-solid fa-flag" style="color: var(--priority-high); font-size: 0.8rem;"></i> ` : ''}
+                                ${task.attachments && task.attachments.length > 0 ? '<i class="fa-solid fa-paperclip" style="color:var(--text-muted); font-size: 0.8rem; margin-right:4px;" title="Tiene adjuntos"></i>' : ''}
                                 ${task.title} ${obsIcon}
                             </div>
                             <div style="display: flex; gap: 4px; margin-left: 8px;">

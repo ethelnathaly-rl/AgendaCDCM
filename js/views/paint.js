@@ -32,6 +32,31 @@ window.CDCM.PaintView = {
                     </label>
 
                     <button class="btn-primary" id="paintSave" title="Guardar Pizarra"><i class="fa-solid fa-download"></i> Descargar</button>
+                    
+                    <button class="btn-primary" id="paintAttachBtn" title="Adjuntar a Tarea" style="background-color: var(--status-progress);"><i class="fa-solid fa-paperclip"></i> Adjuntar a Tarea</button>
+                </div>
+
+                <!-- Modal para Adjuntar -->
+                <div id="paintAttachModal" class="modal">
+                    <div class="modal-content" style="max-width: 400px;">
+                        <div class="modal-header">
+                            <h3 id="paintAttachModalTitle">Adjuntar Dibujo a Tarea</h3>
+                            <button class="btn-icon close-attach-modal"><i class="fa-solid fa-times"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="paintSelectTask">Selecciona el Proyecto/Tarea:</label>
+                                <select id="paintSelectTask" class="form-control">
+                                    <option value="">Selecciona...</option>
+                                    <!-- Options injected via JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <button class="btn-secondary close-attach-modal">Cancelar</button>
+                            <button class="btn-primary" id="paintConfirmAttach">Adjuntar</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="paint-canvas-container" style="flex: 1; background: #ffffff; border-radius: var(--radius-md); border: 1px solid var(--border-color); overflow: hidden; position: relative; box-shadow: var(--shadow-sm); cursor: crosshair;">
@@ -159,6 +184,41 @@ window.CDCM.PaintView = {
                     img.src = event.target.result;
                 }
                 reader.readAsDataURL(file);
+            }
+        });
+
+        // Lógica de Adjuntar
+        const attachModal = document.getElementById('paintAttachModal');
+        const selectTask = document.getElementById('paintSelectTask');
+        
+        document.getElementById('paintAttachBtn').addEventListener('click', () => {
+            const activeTasks = window.CDCM.StateManager.state.tasks.filter(t => t.status !== 'completed' && !t.archived);
+            selectTask.innerHTML = '<option value="">Selecciona...</option>' + 
+                activeTasks.map(t => `<option value="${t.id}">${t.title}</option>`).join('');
+            attachModal.classList.add('active');
+        });
+
+        const closeAttachModals = document.querySelectorAll('.close-attach-modal');
+        closeAttachModals.forEach(btn => btn.addEventListener('click', () => attachModal.classList.remove('active')));
+
+        document.getElementById('paintConfirmAttach').addEventListener('click', () => {
+            const taskId = selectTask.value;
+            if (!taskId) {
+                window.CDCM.Utils.showToast("Selecciona una tarea primero", "error");
+                return;
+            }
+
+            // Comprimir imagen a JPEG 60%
+            const dataUrl = this.canvas.toDataURL('image/jpeg', 0.6);
+            
+            // Obtener tarea actual
+            const task = window.CDCM.StateManager.state.tasks.find(t => t.id === taskId);
+            if (task) {
+                const attachments = task.attachments || [];
+                attachments.push(dataUrl);
+                window.CDCM.StateManager.updateTask(taskId, { attachments: attachments });
+                window.CDCM.Utils.showToast("Imagen adjuntada correctamente a la tarea");
+                attachModal.classList.remove('active');
             }
         });
     },

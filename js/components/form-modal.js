@@ -5,6 +5,7 @@ window.CDCM.FormModal = {
         this.modal = document.getElementById('taskModal');
         this.form = document.getElementById('taskForm');
         this.title = document.getElementById('modalTitle');
+        this.currentAttachments = [];
         
         // Botones de cierre
         const closeBtns = this.modal.querySelectorAll('.close-modal');
@@ -33,6 +34,105 @@ window.CDCM.FormModal = {
                 }
             });
         }
+
+        // Manejo de adjuntos locales
+        const attachInput = document.getElementById('taskAttachmentInput');
+        if (attachInput) {
+            attachInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 800;
+                            const MAX_HEIGHT = 800;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                    height *= MAX_WIDTH / width;
+                                    width = MAX_WIDTH;
+                                }
+                            } else {
+                                if (height > MAX_HEIGHT) {
+                                    width *= MAX_HEIGHT / height;
+                                    height = MAX_HEIGHT;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Compress
+                            
+                            this.currentAttachments.push(dataUrl);
+                            this.renderAttachments();
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    },
+
+    renderAttachments: function() {
+        const gallery = document.getElementById('taskAttachmentsGallery');
+        if (!gallery) return;
+        
+        gallery.innerHTML = '';
+        this.currentAttachments.forEach((dataUrl, index) => {
+            const wrap = document.createElement('div');
+            wrap.style.position = 'relative';
+            wrap.style.width = '60px';
+            wrap.style.height = '60px';
+            wrap.style.borderRadius = 'var(--radius-sm)';
+            wrap.style.overflow = 'hidden';
+            wrap.style.border = '1px solid var(--border-color)';
+            wrap.style.boxShadow = 'var(--shadow-sm)';
+
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.cursor = 'pointer';
+            img.title = 'Clic para ver completa';
+            img.onclick = () => {
+                const w = window.open('');
+                w.document.write('<img src="' + dataUrl + '" style="max-width:100%;">');
+            };
+
+            const delBtn = document.createElement('button');
+            delBtn.innerHTML = '<i class="fa-solid fa-times"></i>';
+            delBtn.style.position = 'absolute';
+            delBtn.style.top = '2px';
+            delBtn.style.right = '2px';
+            delBtn.style.background = 'rgba(239, 68, 68, 0.9)';
+            delBtn.style.color = 'white';
+            delBtn.style.border = 'none';
+            delBtn.style.borderRadius = '50%';
+            delBtn.style.width = '20px';
+            delBtn.style.height = '20px';
+            delBtn.style.fontSize = '10px';
+            delBtn.style.cursor = 'pointer';
+            delBtn.style.display = 'flex';
+            delBtn.style.alignItems = 'center';
+            delBtn.style.justifyContent = 'center';
+            delBtn.onclick = (e) => {
+                e.preventDefault();
+                this.currentAttachments.splice(index, 1);
+                this.renderAttachments();
+            };
+
+            wrap.appendChild(img);
+            wrap.appendChild(delBtn);
+            gallery.appendChild(wrap);
+        });
     },
 
     openNew: function(dateStr) {
@@ -60,6 +160,9 @@ window.CDCM.FormModal = {
         
         const btnDelete = document.getElementById('btnDeleteTask');
         if (btnDelete) btnDelete.style.display = 'none';
+
+        this.currentAttachments = [];
+        this.renderAttachments();
 
         this.modal.classList.add('active');
     },
@@ -114,6 +217,9 @@ window.CDCM.FormModal = {
 
         const btnDelete = document.getElementById('btnDeleteTask');
         if (btnDelete) btnDelete.style.display = 'none';
+
+        this.currentAttachments = [...(task.attachments || [])];
+        this.renderAttachments();
 
         this.modal.classList.add('active');
         window.CDCM.Utils.showToast("Edita los detalles y guarda para confirmar la copia", "info");
@@ -170,6 +276,9 @@ window.CDCM.FormModal = {
         const btnDelete = document.getElementById('btnDeleteTask');
         if (btnDelete) btnDelete.style.display = 'inline-flex';
 
+        this.currentAttachments = [...(task.attachments || [])];
+        this.renderAttachments();
+
         this.modal.classList.add('active');
     },
 
@@ -201,6 +310,7 @@ window.CDCM.FormModal = {
             assignees: Array.from(document.getElementById('taskAssigneesList').querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
             observations: document.getElementById('taskObservations').value,
             details: document.getElementById('taskDetails').value,
+            attachments: this.currentAttachments,
             alarmOffset: (function() { const v = document.getElementById('taskAlarmOffset').value; return v !== '' ? parseInt(v, 10) : null; })(),
             hasAlarm: document.getElementById('taskAlarmOffset').value !== '',
             alarmTriggered: false // Resetear si se edita

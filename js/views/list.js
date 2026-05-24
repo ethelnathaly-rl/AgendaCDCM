@@ -108,7 +108,9 @@ window.CDCM.ListView = {
             html += `<tr style="${isOverdue ? 'background:rgba(239,68,68,0.04);' : ''}">
                 <td>
                     <div style="font-weight:500; color:var(--text-primary); cursor:pointer;" onclick="window.CDCM.FormModal.openEdit('${task.id}')">
-                        ${task.priority === 'high' ? '<i class="fa-solid fa-flag" style="color:var(--priority-high); font-size:0.75rem;"></i> ' : ''}${task.title} ${hasObs}
+                        ${task.priority === 'high' ? '<i class="fa-solid fa-flag" style="color:var(--priority-high); font-size:0.75rem;"></i> ' : ''}
+                        ${task.attachments && task.attachments.length > 0 ? '<i class="fa-solid fa-paperclip" style="color:var(--text-muted); font-size: 0.8rem; margin-right:4px;" title="Tiene adjuntos"></i>' : ''}
+                        ${task.title} ${hasObs}
                     </div>
                 </td>
                 <td>
