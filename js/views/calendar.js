@@ -39,11 +39,12 @@ window.CDCM.CalendarView = {
                         <button class="cal-view-btn ${this.currentView==='daily'?'active':''}" onclick="window.CDCM.CalendarView.switchView('daily')"><i class="fa-solid fa-calendar-day"></i> Día</button>
                     </div>
                 </div>
-                <div class="calendar-grid">
-                    <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mié</div>
-                    <div class="day-name">Jue</div><div class="day-name">Vie</div><div class="day-name">Sáb</div><div class="day-name">Dom</div>
-                </div>
-                <div class="calendar-days">
+                <div class="calendar-scroll-wrapper" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <div class="calendar-grid" style="min-width: 600px;">
+                        <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mié</div>
+                        <div class="day-name">Jue</div><div class="day-name">Vie</div><div class="day-name">Sáb</div><div class="day-name">Dom</div>
+                    </div>
+                    <div class="calendar-days" style="min-width: 600px;">
         `;
 
         const firstDay = new Date(year, month, 1);
@@ -104,7 +105,7 @@ window.CDCM.CalendarView = {
             html += `</div></div>`;
         }
 
-        html += `</div></div>`;
+        html += `</div></div></div>`;
         container.innerHTML = html;
     },
 
@@ -146,8 +147,8 @@ window.CDCM.CalendarView = {
                         <button class="cal-view-btn active" onclick="window.CDCM.CalendarView.switchView('weekly')"><i class="fa-solid fa-calendar-week"></i> Semana</button>
                         <button class="cal-view-btn" onclick="window.CDCM.CalendarView.switchView('daily')"><i class="fa-solid fa-calendar-day"></i> Día</button>
                     </div>
-                </div>
-                <div style="display:grid; grid-template-columns: repeat(7, 1fr); border-bottom:1px solid var(--border-color);">
+                <div class="calendar-scroll-wrapper" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <div style="display:grid; grid-template-columns: repeat(7, 1fr); border-bottom:1px solid var(--border-color); min-width: 600px;">
         `;
 
         days.forEach((d, i) => {
@@ -158,7 +159,7 @@ window.CDCM.CalendarView = {
             </div>`;
         });
 
-        html += `</div><div style="display:grid; grid-template-columns: repeat(7, 1fr);">`;
+        html += `</div><div style="display:grid; grid-template-columns: repeat(7, 1fr); min-width: 600px;">`;
 
         days.forEach(d => {
             const ds = toStr(d);
@@ -187,7 +188,7 @@ window.CDCM.CalendarView = {
             html += `</div></div>`;
         });
 
-        html += `</div></div>`;
+        html += `</div></div></div>`;
         container.innerHTML = html;
     },
 
